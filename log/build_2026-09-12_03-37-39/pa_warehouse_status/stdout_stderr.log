@@ -1,0 +1,36 @@
+running egg_info
+creating ../build/pa_warehouse_status/pa_warehouse_status.egg-info
+writing ../build/pa_warehouse_status/pa_warehouse_status.egg-info/PKG-INFO
+writing dependency_links to ../build/pa_warehouse_status/pa_warehouse_status.egg-info/dependency_links.txt
+writing entry points to ../build/pa_warehouse_status/pa_warehouse_status.egg-info/entry_points.txt
+writing requirements to ../build/pa_warehouse_status/pa_warehouse_status.egg-info/requires.txt
+writing top-level names to ../build/pa_warehouse_status/pa_warehouse_status.egg-info/top_level.txt
+writing manifest file '../build/pa_warehouse_status/pa_warehouse_status.egg-info/SOURCES.txt'
+reading manifest file '../build/pa_warehouse_status/pa_warehouse_status.egg-info/SOURCES.txt'
+adding license file 'LICENSE'
+writing manifest file '../build/pa_warehouse_status/pa_warehouse_status.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build
+creating /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build/lib
+creating /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build/lib/pa_warehouse_status
+copying pa_warehouse_status/__init__.py -> /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build/lib/pa_warehouse_status
+copying pa_warehouse_status/pineapple_gossip_bot.py -> /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build/lib/pa_warehouse_status
+running install
+running install_lib
+creating /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/python3.12/site-packages/pa_warehouse_status
+copying /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build/lib/pa_warehouse_status/__init__.py -> /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/python3.12/site-packages/pa_warehouse_status
+copying /workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/build/lib/pa_warehouse_status/pineapple_gossip_bot.py -> /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/python3.12/site-packages/pa_warehouse_status
+byte-compiling /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/python3.12/site-packages/pa_warehouse_status/__init__.py to __init__.cpython-312.pyc
+byte-compiling /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/python3.12/site-packages/pa_warehouse_status/pineapple_gossip_bot.py to pineapple_gossip_bot.cpython-312.pyc
+running install_data
+creating /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/share/ament_index
+creating /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/share/ament_index/resource_index
+creating /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/share/ament_index/resource_index/packages
+copying resource/pa_warehouse_status -> /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/share/ament_index/resource_index/packages
+copying package.xml -> /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/share/pa_warehouse_status
+running install_egg_info
+Copying ../build/pa_warehouse_status/pa_warehouse_status.egg-info to /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/python3.12/site-packages/pa_warehouse_status-0.0.0-py3.12.egg-info
+running install_scripts
+Installing pineapple_gossip_bot script to /workspace/irs_ws/src/IRS_2026_04/install/pa_warehouse_status/lib/pa_warehouse_status
+writing list of installed files to '/workspace/irs_ws/src/IRS_2026_04/build/pa_warehouse_status/install.log'
