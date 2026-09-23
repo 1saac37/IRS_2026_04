@@ -13,7 +13,7 @@ class PLCHMIListener(Node):
         self.publisher_ = self.create_publisher(String, 'hmi/unified_status',10)
 
         # Subscriber
-        self.subscription = self.create_subscription(
+        self.scription = self.create_subscription(
             String,
             'plc/status',
             self.listener_callback,

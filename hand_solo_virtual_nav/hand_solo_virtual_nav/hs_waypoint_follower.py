@@ -1,5 +1,5 @@
 def main():
-    print('Hi from hs_waypoint_follower.')
+    print('Hi from hand_solo_virtual_nav.')
 
 
 if __name__ == '__main__':
