@@ -101,6 +101,8 @@ def main():
 
     # Add some sort of delay functionality. Look up pythons time module
 
+    # time.sleep(wait_seconds)
+
     # 5. Go to other waypoints and delays if you want
 
     send_and_wait(wp2)
