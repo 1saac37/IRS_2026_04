@@ -62,29 +62,29 @@ class HSWaypointRunner(Node):
 
     # --- script-style sequence (no arrays, no names) --------------------------
     def run(self):
-        # Waypoint 1
-        if not self._send_and_wait([0.0, 0.0, 1.57, 0.0, 1.57, 0.0]): return
+        # Waypoint 1 pick
+        if not self._send_and_wait([1.57, -0.79, -1.57, 0.79, 0.0, 0.0]): return
         time.sleep(10.0)
 
-        # Waypoint 2
-        if not self._send_and_wait([0.785, -0.5, 1.2, 0.0, 1.0, 0.0]): return
+        # Waypoint 2 safe move
+        if not self._send_and_wait([0.0, -0.26, -2.36, 1.05, 0.0, 0.0]): return
         time.sleep(5)
 
-        # Waypoint 3
-        if not self._send_and_wait([0.785, -0.8, 1.4, 0.0, 0.8, 0.0]): return
+        # Waypoint 3 place
+        if not self._send_and_wait([3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]): return
         time.sleep(1.5)
 
-        # Waypoint 4
-        if not self._send_and_wait([0.785, -0.3, 1.2, 0.0, 1.0, 0.0]): return
-        time.sleep(0.5)
+        # Waypoint 4 tmep pick
+        if not self._send_and_wait([1.57, -0.79, -1.57, 0.79, 0.0, 0.0]): return
+        time.sleep(10.0)
 
-        # Waypoint 5
-        if not self._send_and_wait([-0.785, -0.5, 1.2, 0.0, 1.0, 0.0]): return
-        time.sleep(0.5)
+        # Waypoint 5 temp safe move
+        if not self._send_and_wait([0.0, -0.26, -2.36, 1.05, 0.0, 0.0]): return
+        time.sleep(5)
 
-        # Waypoint 6
-        if not self._send_and_wait([0.0, 0.0, 1.57, 0.0, 1.57, 0.0]): return
-        time.sleep(1.0)
+        # Waypoint 6 temp place
+        if not self._send_and_wait([3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]): return
+        time.sleep(1.5)
 
         self.get_logger().info('Sequence complete ✅')
 
