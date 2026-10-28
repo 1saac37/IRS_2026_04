@@ -5,13 +5,16 @@ import time
 import rclpy
 from rclpy.action import ActionClient
 from action_msgs.msg import GoalStatus
-from geometry_msgs.msg import PoseStampedros2
- 
-run
- 
-hand_solo_virtual_nav
- 
-hs_waypoint_follower
+from geometry_msgs.msg import PoseStamped
+from nav2_msgs.action import NavigateToPose
+
+
+# --- Helper function to build a PoseStamped ---
+def make_pose(x: float, y: float, yaw: float) -> PoseStamped:
+    """
+    Create a PoseStamped (position + orientation) in the 'map' frame.
+    - x, y are coordinates in meters
+    - yaw is robot orientation (heading) in radians
     """
     ps = PoseStamped()
     ps.header.frame_id = 'map'  # always use 'map' for navigation goals
