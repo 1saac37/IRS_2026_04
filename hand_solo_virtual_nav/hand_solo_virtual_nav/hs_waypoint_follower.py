@@ -5,16 +5,13 @@ import time
 import rclpy
 from rclpy.action import ActionClient
 from action_msgs.msg import GoalStatus
-from geometry_msgs.msg import PoseStamped
-from nav2_msgs.action import NavigateToPose
-
-
-# --- Helper function to build a PoseStamped ---
-def make_pose(x: float, y: float, yaw: float) -> PoseStamped:
-    """
-    Create a PoseStamped (position + orientation) in the 'map' frame.
-    - x, y are coordinates in meters
-    - yaw is robot orientation (heading) in radians
+from geometry_msgs.msg import PoseStampedros2
+ 
+run
+ 
+hand_solo_virtual_nav
+ 
+hs_waypoint_follower
     """
     ps = PoseStamped()
     ps.header.frame_id = 'map'  # always use 'map' for navigation goals
@@ -85,11 +82,16 @@ def main():
 
     # --- Hard-coded waypoints for this lab. Edit this section in the code and make it your own ---
 
-    wp1 = make_pose(0.0, 0.0, 0.0)          # Sample goal pose. Make your own! You can create multiple way points
-    wp2 = make_pose(0.0, 5.0, 0.0) 
-    wp3 = make_pose(-5.0, 5.0, 0.0) 
-    wp4 = make_pose(-5.0, 0.0, 0.0) 
-    wp5 = make_pose(0.0, 0.0, 0.0) 
+    wp1 = make_pose(5.4, 0.7, -1.5708)          # Sample goal pose. Make your own! You can create multiple way points
+    wp2 = make_pose(5.4, 0.2, -1.5708) 
+    wp3 = make_pose(5.4, -1.4, -1.5708) 
+    wp4 = make_pose(5.4, -1.4, 0.0) 
+    
+    wp6 = make_pose(30.0, -2.0, 0.0) 
+    wp7 = make_pose(30.0, -2.0, -1.5708) 
+    wp8 = make_pose(32.0, -5.45, -1.5708) 
+    wp9 = make_pose(32.0, -5.45, 1.5708) 
+    wp10 = make_pose(32.0, -2.0, 1.5708)
 
     wait_seconds = 5.0                      # How long to wait at each waypoint
 
@@ -108,7 +110,12 @@ def main():
     send_and_wait(wp2)
     send_and_wait(wp3)
     send_and_wait(wp4)
-    send_and_wait(wp5)
+    
+    send_and_wait(wp6)
+    send_and_wait(wp7)
+    send_and_wait(wp8)
+    send_and_wait(wp9)
+    send_and_wait(wp10)
 
 
     # --- Your custom code ends here ---
