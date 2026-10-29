@@ -24,3 +24,20 @@ draft presentation with headings, give param pages to fill out
 - system diagram, flowchart and or pseudo code
 
 journal 4
+
+error from current pickplace. goes to first pose, then fails on navigate?
+
+"root@iT14:/workspace/irs_ws/src/IRS_2026_04# ros2 run final_pick_place pick_place
+[INFO] [1793256379.764214029] [hs_combined_runner]: Waiting for Nav2 action server...
+[INFO] [1793256379.766015571] [hs_combined_runner]: Waiting for MoveGroup action server...
+[INFO] [1793256379.767196755] [hs_combined_runner]: Both action servers ready.
+Traceback (most recent call last):
+  File "/workspace/irs_ws/install/final_pick_place/lib/final_pick_place/pick_place", line 33, in <module>
+    sys.exit(load_entry_point('final-pick-place==0.0.0', 'console_scripts', 'pick_place')())
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/irs_ws/install/final_pick_place/lib/python3.12/site-packages/final_pick_place/pick_place.py", line 173, in main
+    node.run()
+  File "/workspace/irs_ws/install/final_pick_place/lib/python3.12/site-packages/final_pick_place/pick_place.py", line 138, in run
+    self.navigate(nav_conveyor_c)
+TypeError: HSCombinedRunner.navigate() missing 2 required positional arguments: 'y' and 'yaw'
+[ros2run]: Process exited with failure 1"
