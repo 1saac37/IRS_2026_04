@@ -64,27 +64,27 @@ class HSWaypointRunner(Node):
     def run(self):
         # Waypoint 1 pick
         if not self._send_and_wait([1.57, -0.79, -1.57, 0.79, 0.0, 0.0]): return
-        time.sleep(10.0)
+        time.sleep(1.0)
 
         # Waypoint 2 safe move
         if not self._send_and_wait([0.0, -0.26, -2.36, 1.05, 0.0, 0.0]): return
-        time.sleep(5)
+        time.sleep(1.0)
 
         # Waypoint 3 place
         if not self._send_and_wait([3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]): return
-        time.sleep(1.5)
+        time.sleep(1.0)
 
         # Waypoint 4 tmep pick
         if not self._send_and_wait([1.57, -0.79, -1.57, 0.79, 0.0, 0.0]): return
-        time.sleep(10.0)
+        time.sleep(1.0)
 
         # Waypoint 5 temp safe move
         if not self._send_and_wait([0.0, -0.26, -2.36, 1.05, 0.0, 0.0]): return
-        time.sleep(5)
+        time.sleep(1.0)
 
         # Waypoint 6 temp place
         if not self._send_and_wait([3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]): return
-        time.sleep(1.5)
+        time.sleep(1.0)
 
         self.get_logger().info('Sequence complete ✅')
 
