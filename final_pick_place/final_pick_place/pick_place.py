@@ -15,9 +15,20 @@ from moveit_msgs.msg import MotionPlanRequest, Constraints, JointConstraint, Mov
 
 
 # --- Arm poses (joint angles in radians) ---
-ARM_PICK = [1.57, -0.79, -1.57, 0.79, 0.0, 0.0]
-ARM_SAFE = [0.0, -0.26, -2.36, 1.05, 0.0, 0.0]   # stowed pose: use while driving
-ARM_PLACE = [3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]
+arm_pick = [1.57, -0.79, -1.57, 0.79, 0.0, 0.0]
+arm_stow = [0.0, -0.26, -2.36, 1.05, 0.0, 0.0]   # stowed pose: use while driving
+arm_place = [3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]
+
+nav_conveyor_c = [5.4, 0.7, -1.5708]
+nav_conveyor_b = [5.4, 0.2, -1.5708]
+nav_conveyor_a = [5.4, -1.4, -1.5708]
+nav_conveyor_turn = [5.4, -1.4, 0.0]
+nav_approach_place = [30.0, -2.0, 0.0]
+nav_turn_place = [30.0, -2.0, -1.5708]
+nav_place = [32.0, -5.45, -1.5708]
+nav_exit_turn = [32.0, -5.45, 1.5708]
+nav_exit = [32.0, -2.0, 1.5708]
+
 
 
 class HSCombinedRunner(Node):
@@ -40,7 +51,7 @@ class HSCombinedRunner(Node):
 
     # ------------------------------------------------------------------ NAV --
     @staticmethod
-    def make_pose(x: float, y: float, yaw: float) -> PoseStamped:
+    def nav_pose(x: float, y: float, yaw: float) -> PoseStamped:
         ps = PoseStamped()
         ps.header.frame_id = 'map'
         ps.pose.position.x = x
@@ -51,7 +62,7 @@ class HSCombinedRunner(Node):
 
     def navigate(self, x: float, y: float, yaw: float) -> bool:
         goal = NavigateToPose.Goal()
-        goal.pose = self.make_pose(x, y, yaw)
+        goal.pose = self.nav_pose(x, y, yaw)
         goal.pose.header.stamp = self.get_clock().now().to_msg()
 
         def feedback_cb(fb):
@@ -121,31 +132,36 @@ class HSCombinedRunner(Node):
     # ------------------------------------------------------------- SEQUENCE --
     def run(self):
         # Stow the arm before driving anywhere
-        if not self.move_arm(ARM_SAFE): return
+        if not self.move_arm(arm_stow): return
 
-        # --- Stop 1: drive, then pick ---
-        if not self.navigate(5.4, 0.7, -1.5708): return
-        if not self.move_arm(ARM_PICK): return
-        time.sleep(10.0)
-        if not self.move_arm(ARM_SAFE): return      # stow before driving again
+        # Move to start of conveyor
+        if not self.navigate(nav_conveyor_c): return
+         
+        # Move arm to pick position
+        if not self.move_arm(arm_pick): return
+        
+        # Move to end of conveyor past both other box locations  
+        if not self.navigate(nav_conveyor_b): return
+        if not self.navigate(nav_conveyor_a): return
+         
+        # Stow the arm before driving
+        if not self.move_arm(arm_stow): return
 
-        # --- Stop 2: drive, then place ---
-        if not self.navigate(5.4, -1.4, 0.0): return
-        if not self.move_arm(ARM_PLACE): return
-        time.sleep(1.5)
-        if not self.move_arm(ARM_SAFE): return
+        # Move to shelf
+        if not self.navigate(nav_conveyor_turn): return
+        if not self.navigate(nav_approach_place): return
+        if not self.navigate(nav_turn_place): return
+        if not self.navigate(nav_place): return
 
-        # --- Stop 3: drive further, pick again ---
-        if not self.navigate(30.0, -2.0, 0.0): return
-        if not self.move_arm(ARM_PICK): return
-        time.sleep(10.0)
-        if not self.move_arm(ARM_SAFE): return
+        # Place the box and stow the arm before driving
+        if not self.move_arm(arm_place): return
+        if not self.move_arm(arm_stow): return
 
-        # --- Stop 4: drive, place ---
-        if not self.navigate(32.0, -5.45, -1.5708): return
-        if not self.move_arm(ARM_PLACE): return
-        time.sleep(1.5)
-        if not self.move_arm(ARM_SAFE): return
+        # Navigate out of shelf area
+        if not self.navigate(nav_exit_turn): return
+        if not self.navigate(nav_exit): return
+
+        time.sleep(0.0)
 
         self.get_logger().info('Sequence complete ✅')
 
