@@ -135,7 +135,7 @@ class HSCombinedRunner(Node):
         if not self.move_arm(arm_stow): return
 
         # Move to start of conveyor
-        if not self.navigate(nav_conveyor_c): return
+        self.navigate(nav_conveyor_c)
          
         # Move arm to pick position
         if not self.move_arm(arm_pick): return

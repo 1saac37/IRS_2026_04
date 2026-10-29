@@ -1,0 +1,26 @@
+to do today:
+
+rewrite pick_place with copy pastes
+
+change requirments and dependencies from hs_pick_place to final_pick_place/ done
+- int.py/
+- resource/
+- test/
+- package.xml/
+- setup.cfg/
+- setup.py/
+
+work out pathing around kevin
+read hmi status for box location (simplest if weight is sensed, box on conveyor, error handling, if weight not 0 box not picked up
+
+check if there is a hmi status for box in hand, for checking if we placed box correctly [not urgent, extra]
+
+
+later:
+
+journal 3 notes
+
+draft presentation with headings, give param pages to fill out
+- system diagram, flowchart and or pseudo code
+
+journal 4
