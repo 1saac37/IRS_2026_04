@@ -85,16 +85,26 @@ def main():
 
     # --- Hard-coded waypoints for this lab. Edit this section in the code and make it your own ---
 
-    wp1 = make_pose(5.4, 0.7, -1.5708)          # Sample goal pose. Make your own! You can create multiple way points
-    wp2 = make_pose(5.4, 0.2, -1.5708) 
-    wp3 = make_pose(5.4, -1.4, -1.5708) 
-    wp4 = make_pose(5.4, -1.4, 0.0) 
+    wp1 = make_pose(5.4, 0.7, -1.5708)          # starting position? pointed east - coveyor point c
+
+                                                # pick pose
+
+    wp2 = make_pose(5.4, 0.2, -1.5708)          # coveyor point b
+    wp3 = make_pose(5.4, -1.4, -1.5708)         # conveyor point a
+
+                                                # stow pose
+
+    wp4 = make_pose(5.4, -1.4, 0.0)             # conveyor point a rotated "north"
     
-    wp6 = make_pose(30.0, -2.0, 0.0) 
-    wp7 = make_pose(30.0, -2.0, -1.5708) 
-    wp8 = make_pose(32.0, -5.45, -1.5708) 
-    wp9 = make_pose(32.0, -5.45, 1.5708) 
-    wp10 = make_pose(32.0, -2.0, 1.5708)
+    wp6 = make_pose(30.0, -2.0, 0.0)            # west and inline of shelf 
+    wp7 = make_pose(30.0, -2.0, -1.5708)        # same point rotated east
+    wp8 = make_pose(32.0, -5.45, -1.5708)       # shelf placing position
+
+                                                # place pose
+                                                # stow pose
+
+    wp9 = make_pose(32.0, -5.45, 1.5708)        # shelf placing position rotated west
+    wp10 = make_pose(32.0, -2.0, 1.5708)        # moved out of shelf area
 
     wait_seconds = 5.0                      # How long to wait at each waypoint
 
