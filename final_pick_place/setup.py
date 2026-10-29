@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'hand_solo_arm'
+package_name = 'final_pick_place'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'hs_pick_place = hand_solo_arm.hs_pick_place:main',
+            'pick_place = final_pick_place.pick_place:main',
         ],
 
     },
