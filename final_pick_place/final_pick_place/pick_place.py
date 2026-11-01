@@ -137,31 +137,31 @@ class HSCombinedRunner(Node):
         if not self.move_arm(arm_stow): return
 
         # Move to start of conveyor
-        if not self.navigate(5.4, 0.7, -1.5708): return
+        if not self.navigate(*nav_conveyor_c): return
          
         # Move arm to pick position
         if not self.move_arm(arm_pick): return
         
         # Move to end of conveyor past both other box locations  
         if not self.navigate(*nav_conveyor_b): return
-        if not self.navigate(nav_conveyor_a): return
+        if not self.navigate(*nav_conveyor_a): return
          
         # Stow the arm before driving
         if not self.move_arm(arm_stow): return
 
         # Move to shelf
-        if not self.navigate(nav_conveyor_turn): return
-        if not self.navigate(nav_approach_place): return
-        if not self.navigate(nav_turn_place): return
-        if not self.navigate(nav_place): return
+        if not self.navigate(*nav_conveyor_turn): return
+        if not self.navigate(*nav_approach_place): return
+        if not self.navigate(*nav_turn_place): return
+        if not self.navigate(*nav_place): return
 
         # Place the box and stow the arm before driving
         if not self.move_arm(arm_place): return
         if not self.move_arm(arm_stow): return
 
         # Navigate out of shelf area
-        if not self.navigate(nav_exit_turn): return
-        if not self.navigate(nav_exit): return
+        if not self.navigate(*nav_exit_turn): return
+        if not self.navigate(*nav_exit): return
 
         time.sleep(0.0)
 
