@@ -16,6 +16,8 @@ Done:
   - fixed map drift - set all parameters to use simulation time (false to true, implemented if not explicitly mentioned, need to start navigation server with sim time)
   - - sim time and true clock drifted apart causing mapping, and thus pathing errors.
 
+  ros2 launch hand_solo_virtual_nav nav_launch.py use_sim_time:=true
+
 
 To Do: 
   

@@ -21,7 +21,7 @@ def generate_launch_description():
         name='slam_toolbox',
         namespace='',
         output='screen',
-        parameters=[slam_params, {'use_sim_time': true, 'use_lifecycle_manager': False}]
+        parameters=[slam_params, {'use_sim_time': False, 'use_lifecycle_manager': False}]
     )
 
     configure_slam = EmitEvent(
@@ -53,7 +53,7 @@ def generate_launch_description():
             package='rviz2',
             executable='rviz2',
             arguments=['-d', rviz_cfg],
-            parameters=[{'use_sim_time': true}]
+            parameters=[{'use_sim_time': False}]
         ),
 
     ])
