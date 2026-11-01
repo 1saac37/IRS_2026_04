@@ -56,8 +56,10 @@ class HSCombinedRunner(Node):
         ps.header.frame_id = 'map'
         ps.pose.position.x = x
         ps.pose.position.y = y
-        ps.pose.orientation.z = math.sin(yaw * 0.5)
-        ps.pose.orientation.w = math.cos(yaw * 0.5)
+
+        half = yaw * 0.5
+        ps.pose.orientation.z = math.sin(half)
+        ps.pose.orientation.w = math.cos(half)
         return ps
 
     def navigate(self, x: float, y: float, yaw: float) -> bool:
@@ -135,13 +137,13 @@ class HSCombinedRunner(Node):
         if not self.move_arm(arm_stow): return
 
         # Move to start of conveyor
-        self.navigate(nav_conveyor_c)
+        if not self.navigate(5.4, 0.7, -1.5708): return
          
         # Move arm to pick position
         if not self.move_arm(arm_pick): return
         
         # Move to end of conveyor past both other box locations  
-        if not self.navigate(nav_conveyor_b): return
+        if not self.navigate(*nav_conveyor_b): return
         if not self.navigate(nav_conveyor_a): return
          
         # Stow the arm before driving
