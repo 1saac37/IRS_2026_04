@@ -2,6 +2,8 @@
 
 import math
 import time
+import json
+import re
 from typing import List
 
 import rclpy
@@ -9,7 +11,9 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 from action_msgs.msg import GoalStatus
 from geometry_msgs.msg import PoseStamped
-from nav2_msgs.action import NavigateToPose
+from std_msgs.msg import String
+from builtin_interfaces.msg import Duration
+from nav2_msgs.action import NavigateToPose, BackUp
 from moveit_msgs.action import MoveGroup
 from moveit_msgs.msg import MotionPlanRequest, Constraints, JointConstraint, MoveItErrorCodes
 
@@ -22,13 +26,17 @@ arm_place = [3.1416, -0.0, -1.57, 0.0, 0.0, 0.0]
 nav_conveyor_c = [5.4, 0.7, -1.5708]
 nav_conveyor_b = [5.4, 0.2, -1.5708]
 nav_conveyor_a = [5.4, -1.4, -1.5708]
-nav_conveyor_turn = [5.4, -1.4, 0.0]
-nav_approach_place = [30.0, -2.0, 0.0]
-nav_turn_place = [30.0, -2.0, -1.5708]
-nav_place = [32.0, -5.45, -1.5708]
-nav_exit_turn = [32.0, -5.45, 1.5708]
-nav_exit = [32.0, -2.0, 1.5708]
 
+nav_conveyor_turn = [5.4, -1.4, 0.0]
+
+nav_approach_place = [31.2, -2.0, -1.0]
+nav_turn_place = [31.2, -2.0, -1.5708]
+nav_place = [31.2, -5.55, -1.5708]
+nav_exit_turn = [31.2, -5.55, 1.5708]
+nav_exit = [31.2, 1.0, 1.5708]
+
+# adjust this if the conveyor waypoints above change, for reversing
+PICKUP_LEG_DISTANCE = abs(nav_conveyor_c[1] - nav_conveyor_a[1])  # 2.1 m
 
 
 class HSCombinedRunner(Node):
@@ -36,18 +44,26 @@ class HSCombinedRunner(Node):
     PLANNING_GROUP: str = 'tmr_arm'
     ARM_ACTION: str = '/move_action'
     NAV_ACTION: str = 'navigate_to_pose'
+    BACKUP_ACTION: str = 'backup'
 
     def __init__(self):
         super().__init__('hs_combined_runner')
 
         self.nav_client = ActionClient(self, NavigateToPose, self.NAV_ACTION)
         self.arm_client = ActionClient(self, MoveGroup, self.ARM_ACTION)
+        self.backup_client = ActionClient(self, BackUp, self.BACKUP_ACTION)
 
         self.get_logger().info('Waiting for Nav2 action server...')
         self.nav_client.wait_for_server()
         self.get_logger().info('Waiting for MoveGroup action server...')
         self.arm_client.wait_for_server()
-        self.get_logger().info('Both action servers ready.')
+        self.get_logger().info('Waiting for BackUp action server...')
+        self.backup_client.wait_for_server()
+        self.get_logger().info('All action servers ready.')
+
+        # --- Weight tracking from HMI status ---
+        self._latest_weight = None  # None = N/A / no reading yet
+        self.create_subscription(String, '/hmi/unified_status', self._hmi_status_cb, 10)
 
     # ------------------------------------------------------------------ NAV --
     @staticmethod
@@ -88,7 +104,29 @@ class HSCombinedRunner(Node):
         self.get_logger().info(f'Reached ({x}, {y}, yaw {yaw:.2f}).')
         return True
 
-    # ------------------------------------------------------------------ ARM --
+    
+    def reverse(self, distance: float, speed: float = 0.7) -> bool:
+        """Drive straight backward `distance` meters at the current heading — no rotation."""
+        self.get_logger().info(f'Backing up {distance:.2f} m...')
+        self.backup_client.wait_for_server()
+
+        goal = BackUp.Goal()
+        goal.target.x = -abs(distance)      # negative x = backward in robot frame
+        goal.speed = -abs(speed)            # negative speed = reverse
+        goal.time_allowance = Duration(sec=10)
+
+        send_fut = self.backup_client.send_goal_async(goal)
+        rclpy.spin_until_future_complete(self, send_fut)
+        handle = send_fut.result()
+        if not handle or not handle.accepted:
+            self.get_logger().error('Backup goal was rejected!')
+            return False
+
+        res_fut = handle.get_result_async()
+        rclpy.spin_until_future_complete(self, res_fut)
+        return res_fut.result() is not None
+
+    
     def _arm_goal(self, joints: List[float]) -> MoveGroup.Goal:
         goal = MoveGroup.Goal()
         req = MotionPlanRequest()
@@ -131,41 +169,82 @@ class HSCombinedRunner(Node):
             self.get_logger().error('Arm motion failed.')
         return ok
 
-    # ------------------------------------------------------------- SEQUENCE --
+    
+    @staticmethod
+    def _parse_weight(status_json: str):
+        """Return weight in kg as a float, or None if N/A / unparsable."""
+        try:
+            data = json.loads(status_json)
+            weight_raw = data.get('box', {}).get('weight_raw', '')
+        except (json.JSONDecodeError, AttributeError):
+            return None
+        match = re.search(r'(-?\d+(?:\.\d+)?)\s*kg', weight_raw)
+        return float(match.group(1)) if match else None
+
+    def _hmi_status_cb(self, msg: String):
+        self._latest_weight = self._parse_weight(msg.data)
+
+    def weight_is_positive(self) -> bool:
+        return self._latest_weight is not None and self._latest_weight > 0.0
+
+    def wait_for_weight_positive(self):
+        self.get_logger().info('Waiting for a box to be weighed...')
+        while rclpy.ok() and not self.weight_is_positive():
+            rclpy.spin_once(self, timeout_sec=0.2)
+        self.get_logger().info(f'Box detected, weight={self._latest_weight} kg')
+
+    
+    def pickup_leg(self) -> bool:
+        """Stow -> conveyor start -> pick -> move past b and a. Returns False on any step failure."""
+        if not self.move_arm(arm_stow): return False
+        if not self.navigate(*nav_conveyor_c): return False
+        if not self.move_arm(arm_pick): return False
+        if not self.navigate(*nav_conveyor_b): return False
+        if not self.navigate(*nav_conveyor_a): return False
+        return True
+
+    def delivery_leg(self) -> bool:
+        """Stow -> shelf approach -> place -> stow -> exit. Returns False on any step failure."""
+        if not self.move_arm(arm_stow): return False
+        if not self.navigate(*nav_conveyor_turn): return False
+        if not self.navigate(*nav_approach_place): return False
+        if not self.navigate(*nav_turn_place): return False
+        if not self.navigate(*nav_place): return False
+        if not self.move_arm(arm_place): return False
+        if not self.move_arm(arm_stow): return False
+        if not self.navigate(*nav_exit_turn): return False
+        if not self.navigate(*nav_exit): return False
+        return True
+
+    def return_to_pickup_start(self) -> bool:
+        """Undo the pickup leg without rotating: reverse straight back to nav_conveyor_c."""
+        return self.reverse(distance=PICKUP_LEG_DISTANCE)
+
     def run(self):
-        # Stow the arm before driving anywhere
-        if not self.move_arm(arm_stow): return
+        try:
+            while rclpy.ok():
+                self.wait_for_weight_positive()
 
-        # Move to start of conveyor
-        if not self.navigate(*nav_conveyor_c): return
-         
-        # Move arm to pick position
-        if not self.move_arm(arm_pick): return
-        
-        # Move to end of conveyor past both other box locations  
-        if not self.navigate(*nav_conveyor_b): return
-        if not self.navigate(*nav_conveyor_a): return
-         
-        # Stow the arm before driving
-        if not self.move_arm(arm_stow): return
+                while True:
+                    if not self.pickup_leg():
+                        self.get_logger().error('Pickup leg failed on a nav/arm step. Aborting run.')
+                        return
 
-        # Move to shelf
-        if not self.navigate(*nav_conveyor_turn): return
-        if not self.navigate(*nav_approach_place): return
-        if not self.navigate(*nav_turn_place): return
-        if not self.navigate(*nav_place): return
+                    rclpy.spin_once(self, timeout_sec=0.2)  # fresh weight reading
+                    if not self.weight_is_positive():
+                        break
+                    self.get_logger().warn('Still weighted after pickup leg - retrying.')
+                    if not self.return_to_pickup_start():
+                        self.get_logger().error('Reverse maneuver failed. Aborting run.')
+                        return
 
-        # Place the box and stow the arm before driving
-        if not self.move_arm(arm_place): return
-        if not self.move_arm(arm_stow): return
+                if not self.delivery_leg():
+                    self.get_logger().error('Delivery leg failed on a nav/arm step. Aborting run.')
+                    return
 
-        # Navigate out of shelf area
-        if not self.navigate(*nav_exit_turn): return
-        if not self.navigate(*nav_exit): return
-
-        time.sleep(0.0)
-
-        self.get_logger().info('Sequence complete ✅')
+                self.get_logger().info('Delivery cycle complete. Waiting for next box...')
+        except KeyboardInterrupt:
+            self.get_logger().info('Interrupted by user.')
 
 
 def main(args=None):
