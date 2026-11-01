@@ -27,17 +27,22 @@ nav_conveyor_c = [5.4, 0.7, -1.5708]
 nav_conveyor_b = [5.4, 0.2, -1.5708]
 nav_conveyor_a = [5.4, -1.4, -1.5708]
 
-nav_conveyor_turn = [5.4, -1.4, 0.0]
+nav_conveyor_turn = [5.4, -1.4, 0.0] # not neccessary after reverse implemented
 
-nav_approach_place = [31.2, -2.0, -1.0]
-nav_turn_place = [31.2, -2.0, -1.5708]
-nav_place = [31.2, -5.55, -1.5708]
-nav_exit_turn = [31.2, -5.55, 1.5708]
-nav_exit = [31.2, 1.0, 1.5708]
+nav_approach_place = [30.9, -2.8, -1.0]
+nav_turn_place = [30.9, -2.0, -1.5708]
+nav_place = [30.9, -5.6, -1.5708]
+nav_exit_turn = [30.9, -1.0, 1.5708]
+nav_exit = [30.9, 1.0, 1.5708]
 
 # adjust this if the conveyor waypoints above change, for reversing
 PICKUP_LEG_DISTANCE = abs(nav_conveyor_c[1] - nav_conveyor_a[1])  # 2.1 m
 
+# Distance to reverse after successful pickup to allow clearance to head towards shelf
+REVERSE_AFTER_PICK = (0.5 * PICKUP_LEG_DISTANCE) # tune to your actual geometry
+
+# Distance to reverse after reaching nav_place
+REVERSE_AFTER_PLACE_DISTANCE = 4.0
 
 class HSCombinedRunner(Node):
     JOINT_NAMES: List[str] = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
@@ -65,7 +70,7 @@ class HSCombinedRunner(Node):
         self._latest_weight = None  # None = N/A / no reading yet
         self.create_subscription(String, '/hmi/unified_status', self._hmi_status_cb, 10)
 
-    # ------------------------------------------------------------------ NAV --
+    
     @staticmethod
     def nav_pose(x: float, y: float, yaw: float) -> PoseStamped:
         ps = PoseStamped()
@@ -206,12 +211,14 @@ class HSCombinedRunner(Node):
     def delivery_leg(self) -> bool:
         """Stow -> shelf approach -> place -> stow -> exit. Returns False on any step failure."""
         if not self.move_arm(arm_stow): return False
-        if not self.navigate(*nav_conveyor_turn): return False
+        if not self.reverse(distance=REVERSE_AFTER_PICK): return False 
+        # if not self.navigate(*nav_conveyor_turn): return False  # not neccessary anymore
         if not self.navigate(*nav_approach_place): return False
-        if not self.navigate(*nav_turn_place): return False
+        # if not self.navigate(*nav_turn_place): return False # not neccessary
         if not self.navigate(*nav_place): return False
         if not self.move_arm(arm_place): return False
         if not self.move_arm(arm_stow): return False
+        if not self.reverse(distance=REVERSE_AFTER_PLACE_DISTANCE): return False  
         if not self.navigate(*nav_exit_turn): return False
         if not self.navigate(*nav_exit): return False
         return True
