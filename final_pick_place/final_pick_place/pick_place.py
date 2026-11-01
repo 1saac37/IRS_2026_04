@@ -30,7 +30,6 @@ nav_exit_turn = [32.0, -5.45, 1.5708]
 nav_exit = [32.0, -2.0, 1.5708]
 
 
-
 class HSCombinedRunner(Node):
     JOINT_NAMES: List[str] = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
     PLANNING_GROUP: str = 'tmr_arm'
@@ -56,8 +55,11 @@ class HSCombinedRunner(Node):
         ps.header.frame_id = 'map'
         ps.pose.position.x = x
         ps.pose.position.y = y
-        ps.pose.orientation.z = math.sin(yaw * 0.5)
-        ps.pose.orientation.w = math.cos(yaw * 0.5)
+    
+        # Convert yaw (in radians) into quaternion (needed by ROS2)
+        half = yaw * 0.5
+        ps.pose.orientation.z = math.sin(half)
+        ps.pose.orientation.w = math.cos(half)
         return ps
 
     def navigate(self, x: float, y: float, yaw: float) -> bool:
@@ -135,13 +137,13 @@ class HSCombinedRunner(Node):
         if not self.move_arm(arm_stow): return
 
         # Move to start of conveyor
-        self.navigate(nav_conveyor_c)
+        if not self.navigate(5.4, 0.7, -1.5708): return # Potential Fix 1
          
         # Move arm to pick position
         if not self.move_arm(arm_pick): return
         
         # Move to end of conveyor past both other box locations  
-        if not self.navigate(nav_conveyor_b): return
+        if not self.navigate(*nav_conveyor_b): return # Potential Fix 2
         if not self.navigate(nav_conveyor_a): return
          
         # Stow the arm before driving
