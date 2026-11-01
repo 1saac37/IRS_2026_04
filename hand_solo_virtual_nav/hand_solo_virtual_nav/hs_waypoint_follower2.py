@@ -14,6 +14,9 @@ from std_msgs.msg import String
 import json
 import re
 
+from nav2_msgs.action import BackUp
+from builtin_interfaces.msg import Duration
+
 # end
 
 
@@ -45,6 +48,30 @@ def main():
     client = ActionClient(node, NavigateToPose, 'navigate_to_pose')
 
     # start changes
+
+    backup_client = ActionClient(node, BackUp, 'backup')
+
+    def reverse(distance: float, speed: float = 0.7) -> bool:
+        """Drive straight backward `distance` meters at the current heading — no rotation."""
+        node.get_logger().info(f'Backing up {distance:.2f} m...')
+        backup_client.wait_for_server()
+
+        goal = BackUp.Goal()
+        goal.target.x = -abs(distance)      # negative x = backward in robot frame
+        goal.speed = -abs(speed)            # negative speed = reverse
+        goal.time_allowance = Duration(sec=10)
+
+        send_future = backup_client.send_goal_async(goal)
+        rclpy.spin_until_future_complete(node, send_future)
+        handle = send_future.result()
+
+        if not handle or not handle.accepted:
+            node.get_logger().error('Backup goal was rejected!')
+            return False
+
+        result_future = handle.get_result_async()
+        rclpy.spin_until_future_complete(node, result_future)
+        return result_future.result() is not None
 
     # --- Weight tracking from HMI status ---
     latest_weight = {'value': None}  # None = N/A / no reading yet
@@ -123,6 +150,8 @@ def main():
         node.get_logger().info('Goal reached successfully!')
         return True
 
+    # start changes
+
     # --- Hard-coded waypoints for this lab. Edit this section in the code and make it your own ---
 
     wp1 = make_pose(5.4, 0.7, -1.5708)          # starting position? pointed east - coveyor point c
@@ -130,16 +159,11 @@ def main():
                                                 # pick pose
 
     wp2 = make_pose(5.4, 0.2, -1.5708)          # coveyor point b
-    wp3 = make_pose(5.4, -1.4, -1.5708)         # conveyor point a
+    wp3 = make_pose(5.4, -2.0, -1.5708)         # conveyor point a
 
                                                 # stow pose
 
     wp4 = make_pose(5.4, -1.4, 0.0)             # conveyor point a rotated "north"
-    
-    wp10 = make_pose(5.4, -1.4, 3.1416) 
-    wp11 = make_pose(5.4, -1.4, 1.5708)         # redo point a facing west
-    wp12 = make_pose(5.4, 0.7, -1.5708)         # back at start facing west
-    
 
     wp5 = make_pose(30.0, -2.0,-1.0)            # west and inline of shelf 
     wp6 = make_pose(30.0, -2.0, -1.5708)        # same point rotated east
@@ -151,43 +175,41 @@ def main():
     wp8 = make_pose(31.0, -5.55, 1.5708)        # shelf placing position rotated west
     wp9 = make_pose(31.0, 1.0, 1.5708)          # moved out of shelf area
 
-
-    # start changes
     
     # 3. Main loop
+    def pickup_leg() -> None:
+        """wp1 -> wp2 -> wp3: approach and attempt pickup."""
+        send_and_wait(wp1)
+        send_and_wait(wp2)
+        send_and_wait(wp3)
+
+    def delivery_leg() -> None:
+        """wp4 -> wp9: deliver to shelf. Runs to completion regardless of weight changes."""
+        send_and_wait(wp4)
+        send_and_wait(wp5)
+        send_and_wait(wp6)
+        send_and_wait(wp7)
+        send_and_wait(wp8)
+        send_and_wait(wp9)
+
+    def return_to_pickup_start() -> None:
+        """Undo wp1->wp3 without rotating: reverse straight back to wp1's position."""
+        reverse(distance=3.0)  # adjusting
+
+    # --- Main loop ---
     try:
         while rclpy.ok():
-            # Block here until a box with weight > 0 is present
             wait_for_weight_positive()
 
-            # --- Pickup leg: retry wp1->wp3 until the box is actually picked up ---
             while True:
-                send_and_wait(wp1)
-                send_and_wait(wp2)
-                send_and_wait(wp3)
+                pickup_leg()
+                rclpy.spin_once(node, timeout_sec=0.2)  # fresh weight reading
+                if not weight_is_positive():
+                    break
+                node.get_logger().warn('Still weighted after wp3 - retrying pickup leg.')
+                return_to_pickup_start()
 
-                send_and_wait(wp10)
-                send_and_wait(wp11)
-                send_and_wait(wp12)
-                
-
-                rclpy.spin_once(node, timeout_sec=0.2)  # get a fresh weight reading
-                if weight_is_positive():
-                    node.get_logger().warn('Still weighted after wp3 - retrying pickup leg.')
-                    continue
-                break
-
-            # --- Delivery leg ---
-            send_and_wait(wp4)
-            send_and_wait(wp5)
-            send_and_wait(wp6)
-            send_and_wait(wp7)
-            send_and_wait(wp8)
-            send_and_wait(wp9)
-
-            # Loop restarts: wait_for_weight_positive() returns immediately if a
-            # new box is already waiting, otherwise it blocks until one arrives
-            # (or the node is terminated).
+            delivery_leg()
     except KeyboardInterrupt:
         node.get_logger().info('Interrupted by user.')
 
