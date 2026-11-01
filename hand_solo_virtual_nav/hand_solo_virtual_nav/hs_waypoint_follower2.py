@@ -136,15 +136,20 @@ def main():
 
     wp4 = make_pose(5.4, -1.4, 0.0)             # conveyor point a rotated "north"
     
-    wp6 = make_pose(30.0, -2.0, 0.0)            # west and inline of shelf 
-    wp7 = make_pose(30.0, -2.0, -1.5708)        # same point rotated east
-    wp8 = make_pose(32.0, -5.45, -1.5708)       # shelf placing position
+    wp10 = make_pose(5.4, -1.4, 3.1416) 
+    wp11 = make_pose(5.4, -1.4, 1.5708)         # redo point a facing west
+    wp12 = make_pose(5.4, 0.7, -1.5708)         # back at start facing west
+    
+
+    wp5 = make_pose(30.0, -2.0,-1.0)            # west and inline of shelf 
+    wp6 = make_pose(30.0, -2.0, -1.5708)        # same point rotated east
+    wp7 = make_pose(31.0, -5.55, -1.5708)       # shelf placing position
 
                                                 # place pose
                                                 # stow pose
 
-    wp9 = make_pose(32.0, -5.45, 1.5708)        # shelf placing position rotated west
-    wp10 = make_pose(32.0, -2.0, 1.5708)        # moved out of shelf area
+    wp8 = make_pose(31.0, -5.55, 1.5708)        # shelf placing position rotated west
+    wp9 = make_pose(31.0, 1.0, 1.5708)          # moved out of shelf area
 
 
     # start changes
@@ -161,6 +166,11 @@ def main():
                 send_and_wait(wp2)
                 send_and_wait(wp3)
 
+                send_and_wait(wp10)
+                send_and_wait(wp11)
+                send_and_wait(wp12)
+                
+
                 rclpy.spin_once(node, timeout_sec=0.2)  # get a fresh weight reading
                 if weight_is_positive():
                     node.get_logger().warn('Still weighted after wp3 - retrying pickup leg.')
@@ -169,11 +179,11 @@ def main():
 
             # --- Delivery leg ---
             send_and_wait(wp4)
+            send_and_wait(wp5)
             send_and_wait(wp6)
             send_and_wait(wp7)
             send_and_wait(wp8)
             send_and_wait(wp9)
-            send_and_wait(wp10)
 
             # Loop restarts: wait_for_weight_positive() returns immediately if a
             # new box is already waiting, otherwise it blocks until one arrives

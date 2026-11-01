@@ -1,10 +1,10 @@
 amcl:
   ros__parameters:
     use_sim_time: false
-    alpha1: 0.2
-    alpha2: 0.2
-    alpha3: 0.2
-    alpha4: 0.2
+    alpha1: 0.05
+    alpha2: 0.05
+    alpha3: 0.05
+    alpha4: 0.05
     alpha5: 0.2
     base_frame_id: virtual_hand_solo/base_link
     beam_skip_distance: 0.5
@@ -17,7 +17,7 @@ amcl:
     laser_max_range: 10.0
     laser_min_range: 0.1
     laser_model_type: "likelihood_field"
-    max_beams: 60
+    max_beams: 180
     max_particles: 2000
     min_particles: 500
     odom_frame_id: "virtual_hand_solo/odom"
@@ -113,7 +113,7 @@ controller_server:
       short_circuit_trajectory_evaluation: True
       stateful: True
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-      BaseObstacle.scale: 1.0
+      BaseObstacle.scale: 15.0
       PathAlign.scale: 18.0
       PathAlign.forward_point_distance: 0.3
       GoalAlign.scale: 12.0

@@ -12,13 +12,9 @@ Done:
   check if there is a hmi status for box in hand, for checking if we placed box correctly [not urgent, extra] - confirmed
 
   work out pathing around kevin - scan "sees" kevin but does not avoid - Isaac
-
-  - fixed map drift - set all parameters to use simulation time (false to true, implemented if not explicitly mentioned, need to start navigation server with sim time)
-  - - sim time and true clock drifted apart causing mapping, and thus pathing errors.
-
-  ros2 launch hand_solo_virtual_nav nav_launch.py use_sim_time:=true
-
-
+  - some times works sometimes doesn't, sim time not the issue
+ 
+  
 To Do: 
   
 

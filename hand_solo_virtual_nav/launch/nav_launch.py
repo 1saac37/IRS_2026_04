@@ -5,6 +5,30 @@ from launch.substitutions import PathJoinSubstitution
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 
+from launch.actions import TimerAction
+
+# Corrective static transform: overrides the bad base_link -> lidar_link
+# transform broadcast by the sim container's static_tf_publisher node.
+# Delayed so it publishes AFTER that node, winning TF's last-write-wins
+# resolution. Values match robot_state_publisher's URDF-derived transform
+# (xyz="0.45 0 0.195", rpy="3.14 0 0" -> quaternion below).
+
+lidar_tf_fix = Node(
+    package='tf2_ros',
+    executable='static_transform_publisher',
+    name='lidar_tf_corrective_fix',
+    arguments=[
+        '--x', '0.45', '--y', '0', '--z', '0.195',
+        '--qx', '0', '--qy', '0', '--qz', '0', '--qw', '1',
+        '--frame-id', 'virtual_hand_solo/base_link',
+        '--child-frame-id', 'virtual_hand_solo/lidar_link'
+    ],
+    output='screen'
+)
+
+delayed_lidar_tf_fix = TimerAction(period=5.0, actions=[lidar_tf_fix])
+
+
 def generate_launch_description():
     # Package paths
     pkg_share = FindPackageShare('hand_solo_virtual_nav')
@@ -189,6 +213,9 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+
+        delayed_lidar_tf_fix,
+
         # Launch arguments
         declare_use_sim_time,
 
