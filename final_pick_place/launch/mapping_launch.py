@@ -9,7 +9,7 @@ from launch.substitutions import PathJoinSubstitution
 from lifecycle_msgs.msg import Transition
 
 def generate_launch_description():
-    pkg_share   = FindPackageShare('final_pick_place')
+    pkg_share   = FindPackageShare('hand_solo_virtual_nav')
     slam_params = PathJoinSubstitution([pkg_share, 'config', 'pa_slam_params.yaml'])
     rviz_cfg    = PathJoinSubstitution([pkg_share, 'rviz',   'pa_rviz_mapping.rviz'])
 
