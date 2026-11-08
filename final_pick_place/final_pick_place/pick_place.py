@@ -35,11 +35,11 @@ nav_place = [30.7, -5.9, -1.5708]
 nav_exit_turn = [30.7, -1.0, 3.1416]
 nav_exit = [16.0, 0.0, 3.1416]
 
-# adjust this if the conveyor waypoints above change, for reversing
+# Pickup leg distance
 PICKUP_LEG_DISTANCE = abs(nav_conveyor_c[1] - nav_conveyor_a[1])  # 2.1 m
 
 # Distance to reverse after successful pickup to allow clearance to head towards shelf
-REVERSE_AFTER_PICK = (0.5 * PICKUP_LEG_DISTANCE) # tune to your actual geometry
+REVERSE_AFTER_PICK = (0.5 * PICKUP_LEG_DISTANCE) 
 
 # Distance to reverse after reaching nav_place
 REVERSE_AFTER_PLACE_DISTANCE = 4.0

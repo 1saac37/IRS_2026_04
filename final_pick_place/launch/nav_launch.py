@@ -10,8 +10,7 @@ from launch.actions import TimerAction
 # Corrective static transform: overrides the bad base_link -> lidar_link
 # transform broadcast by the sim container's static_tf_publisher node.
 # Delayed so it publishes AFTER that node, winning TF's last-write-wins
-# resolution. Values match robot_state_publisher's URDF-derived transform
-# (xyz="0.45 0 0.195", rpy="3.14 0 0" -> quaternion below).
+
 
 lidar_tf_fix = Node(
     package='tf2_ros',
