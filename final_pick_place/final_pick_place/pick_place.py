@@ -224,13 +224,13 @@ class HSCombinedRunner(Node):
         return True
 
     def return_to_pickup_start(self) -> bool:
-        """Undo the pickup leg without rotating: reverse straight back to nav_conveyor_c."""
+        # return to start of conveyor by reversing
         return self.reverse(distance=PICKUP_LEG_DISTANCE)
 
     def run(self):
         try:
             while rclpy.ok():
-                self.wait_for_weight_positive()
+                self.wait_for_weight_positive() # waits for box on conveyor
 
                 while True:
                     if not self.pickup_leg():
@@ -239,11 +239,12 @@ class HSCombinedRunner(Node):
 
                     rclpy.spin_once(self, timeout_sec=0.2)  # fresh weight reading
                     if not self.weight_is_positive():
-                        break
+                        break # if weight becomes 0, end pick_up loop
+
                     self.get_logger().warn('Still weighted after pickup leg - retrying.')
                     if not self.return_to_pickup_start():
                         self.get_logger().error('Reverse maneuver failed. Aborting run.')
-                        return
+                        return # else retry
 
                 if not self.delivery_leg():
                     self.get_logger().error('Delivery leg failed on a nav/arm step. Aborting run.')

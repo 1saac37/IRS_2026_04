@@ -13,7 +13,7 @@ components of final_pick_place:
 
 - launch
     - mapping_launch
-    - nav_launch
+    - nav_launch.py
 
 - map
 - config

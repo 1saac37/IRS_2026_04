@@ -192,14 +192,6 @@ def generate_launch_description():
         ]
     )
 
-    # hs_waypoint_follower = Node(
-    #     package='hand_solo_virtual_nav',
-    #     executable='hs_waypoint_follower',
-    #     name='hs_waypoint_follower',
-    #     output='screen',
-    #     parameters=[{'use_sim_time': use_sim_time}]
-    # )
-
     # RViz2
     
     rviz = Node(
@@ -222,9 +214,6 @@ def generate_launch_description():
         map_server,
         amcl,
         lifecycle_manager_localization,
-
-        # addition per journal instructions
-        # hs_waypoint_follower,
 
         # Navigation Stack
         controller_server,
